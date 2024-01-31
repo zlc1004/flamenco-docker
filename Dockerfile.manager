@@ -1,0 +1,16 @@
+FROM debian:12.4-slim AS package-retrieval
+
+RUN apt update && apt install curl -y
+RUN curl https://flamenco.blender.org/downloads/flamenco-3.4-linux-amd64.tar.gz > /tmp/flamenco.tar.gz
+RUN mkdir -p /flamenco && tar -zxvf /tmp/flamenco.tar.gz -C /flamenco
+
+FROM scratch
+
+COPY --from=package-retrieval /flamenco/flamenco-3.4-linux-amd64 /flamenco
+WORKDIR /flamenco
+
+COPY ./flamenco-manager.yaml ./flamenco-manager.yaml
+
+EXPOSE 8080
+
+CMD ["./flamenco-manager"]
