@@ -4,13 +4,12 @@ RUN apt update && apt install curl -y
 RUN curl https://flamenco.blender.org/downloads/flamenco-3.5-linux-amd64.tar.gz > /tmp/flamenco.tar.gz
 RUN mkdir -p /flamenco && tar -zxvf /tmp/flamenco.tar.gz -C /flamenco
 
-FROM scratch
+FROM docker.io/linuxserver/blender:4.2.3
 
 COPY --from=package-retrieval /flamenco/flamenco-3.5-linux-amd64 /flamenco
+
 WORKDIR /flamenco
 
-COPY ./flamenco-manager.yaml ./flamenco-manager.yaml
+ENV MANAGER_URL=http://localhost:8080
 
-EXPOSE 8080
-
-CMD ["./flamenco-manager"]
+CMD ["sh", "-c", "/flamenco/flamenco-worker -manager ${MANAGER_URL} -restart-exit-code 47"]
