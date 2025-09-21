@@ -12,15 +12,14 @@ RUN apt update && apt install -y ca-certificates gettext-base && rm -rf /var/lib
 COPY --from=package-retrieval /flamenco/flamenco-3.5-linux-amd64 /flamenco
 WORKDIR /flamenco
 
-# Copy configuration files and entrypoint
+# Copy configuration files
 COPY ./flamenco-manager.yaml.template ./flamenco-manager.yaml.template
 COPY ./flamenco-manager.yaml ./flamenco-manager.yaml
-COPY ./entrypoint-manager.sh ./entrypoint-manager.sh
-RUN chmod +x ./entrypoint-manager.sh
 
 # Create directories for data persistence
 RUN mkdir -p /flamenco/flamenco-manager-storage /flamenco/data /mnt/shared/flamenco
 
 EXPOSE 8080
 
-ENTRYPOINT ["./entrypoint-manager.sh"]
+# Use shell form to allow environment variable substitution
+CMD envsubst < /flamenco/flamenco-manager.yaml.template > /flamenco/flamenco-manager.yaml && exec /flamenco/flamenco-manager
