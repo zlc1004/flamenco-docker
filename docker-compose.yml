@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.manager
     container_name: flamenco-manager
     ports:
-      - "8080:8080"
+      - "50129:8080"
     environment:
       - FLAMENCO_MANAGER_NAME=Flamenco Manager
       - FLAMENCO_DATABASE=flamenco-manager.sqlite
