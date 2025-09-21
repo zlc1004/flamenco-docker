@@ -1,0 +1,104 @@
+# Flamenco Docker - Generated Files and Data
+# ==========================================
+
+# Data directories created by Docker Compose
+flamenco-manager-storage/
+shared-storage/
+data/
+worker-cache/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+temp/
+
+# Logs
+*.log
+logs/
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Docker files
+.dockerignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Blender temporary files
+*.blend1
+*.blend2
+*.blend@
+*.crash
+/tmp/
+
+# Render output (if stored locally)
+render/
+output/
+renders/
+*.exr
+*.png
+*.jpg
+*.jpeg
+*.tiff
+*.mov
+*.mp4
+*.avi
+
+# Flamenco specific
+flamenco-worker-credentials.yaml
+*.flamenco.blend
+
+# Node modules (if any Node.js tools are added)
+node_modules/
+
+# Python cache (if any Python scripts are added)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+
+# Git-related
+*.patch
+*.diff
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.cert
+
+# Performance monitoring
+perf.data*
+
+# Core dumps
+core
+core.*
+
+# Compressed files (usually temporary)
+*.zip
+*.tar.gz
+*.tar.bz2
+*.7z
+*.rar
