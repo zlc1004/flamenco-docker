@@ -38,10 +38,13 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       # Headless rendering configuration
-      - DISPLAY=
+      - DISPLAY=:99
       - XDG_RUNTIME_DIR=/tmp
       - LIBGL_ALWAYS_SOFTWARE=1
       - XVFB_WHD=1920x1080x24
+      # Force GPU rendering
+      - CYCLES_DEVICE=CUDA
+      - BLENDER_GPU_COMPUTE=1
     volumes:
       - ./shared-storage:/mnt/shared/flamenco
       - ./worker-cache:/tmp/flamenco-worker-cache
