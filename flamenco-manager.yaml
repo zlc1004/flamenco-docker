@@ -24,4 +24,4 @@ variables:
   blenderArgs:
     values:
       - platform: all
-        value: -b -y
+        value: -b -y -E CYCLES -a -- --cycles-device CUDA
