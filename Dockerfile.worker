@@ -10,6 +10,11 @@ COPY --from=package-retrieval /flamenco/flamenco-3.5-linux-amd64 /flamenco
 
 WORKDIR /flamenco
 
+# Create necessary directories
+RUN mkdir -p /mnt/shared/flamenco /tmp/flamenco-worker-cache
+
+# Set default environment variables (can be overridden by docker-compose)
 ENV MANAGER_URL=http://localhost:8080
+ENV FLAMENCO_WORKER_NAME="Flamenco Worker"
 
 CMD ["sh", "-c", "/flamenco/flamenco-worker -manager ${MANAGER_URL} -restart-exit-code 47"]

@@ -1,0 +1,27 @@
+_meta:
+  version: 3
+manager_name: ${FLAMENCO_MANAGER_NAME}
+database: ${FLAMENCO_DATABASE}
+listen: ${FLAMENCO_LISTEN}
+autodiscoverable: ${FLAMENCO_AUTODISCOVERABLE}
+local_manager_storage_path: ${FLAMENCO_LOCAL_STORAGE_PATH}
+shared_storage_path: ${FLAMENCO_SHARED_STORAGE_PATH}
+shaman:
+  enabled: ${FLAMENCO_SHAMAN_ENABLED}
+task_timeout: ${FLAMENCO_TASK_TIMEOUT}
+worker_timeout: ${FLAMENCO_WORKER_TIMEOUT}
+blocklist_threshold: ${FLAMENCO_BLOCKLIST_THRESHOLD}
+task_fail_after_softfail_count: ${FLAMENCO_TASK_FAIL_AFTER_SOFTFAIL_COUNT}
+variables:
+  blender:
+    values:
+      - platform: linux
+        value: blender
+      - platform: windows
+        value: blender
+      - platform: darwin
+        value: blender
+  blenderArgs:
+    values:
+      - platform: all
+        value: -b -y

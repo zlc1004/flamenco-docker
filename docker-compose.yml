@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  flamenco-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile.manager
+    container_name: flamenco-manager
+    ports:
+      - "8080:8080"
+    environment:
+      - FLAMENCO_MANAGER_NAME=Flamenco Manager
+      - FLAMENCO_DATABASE=flamenco-manager.sqlite
+      - FLAMENCO_LISTEN=:8080
+      - FLAMENCO_AUTODISCOVERABLE=true
+      - FLAMENCO_LOCAL_STORAGE_PATH=./flamenco-manager-storage
+      - FLAMENCO_SHARED_STORAGE_PATH=/mnt/shared/flamenco
+      - FLAMENCO_SHAMAN_ENABLED=true
+      - FLAMENCO_TASK_TIMEOUT=10m0s
+      - FLAMENCO_WORKER_TIMEOUT=1m0s
+      - FLAMENCO_BLOCKLIST_THRESHOLD=3
+      - FLAMENCO_TASK_FAIL_AFTER_SOFTFAIL_COUNT=3
+    volumes:
+      - ./flamenco-manager-storage:/flamenco/flamenco-manager-storage
+      - ./shared-storage:/mnt/shared/flamenco
+      - ./data:/flamenco/data  # For database and other persistent data
+    networks:
+      - flamenco-network
+    restart: unless-stopped
+
+  flamenco-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - MANAGER_URL=http://flamenco-manager:8080
+      - FLAMENCO_WORKER_NAME=Flamenco Worker
+    volumes:
+      - ./shared-storage:/mnt/shared/flamenco
+      - ./worker-cache:/tmp/flamenco-worker-cache
+    networks:
+      - flamenco-network
+    depends_on:
+      - flamenco-manager
+    restart: unless-stopped
+    # Scale workers as needed
+    scale: 1
+
+networks:
+  flamenco-network:
+    driver: bridge
+
+volumes:
+  flamenco-manager-storage:
+  shared-storage:
+  data:
+  worker-cache:
