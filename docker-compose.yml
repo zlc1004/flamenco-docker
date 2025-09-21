@@ -35,6 +35,8 @@ services:
     environment:
       - MANAGER_URL=http://flamenco-manager:8080
       - FLAMENCO_WORKER_NAME=Flamenco Worker
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     volumes:
       - ./shared-storage:/mnt/shared/flamenco
       - ./worker-cache:/tmp/flamenco-worker-cache
@@ -43,6 +45,8 @@ services:
     depends_on:
       - flamenco-manager
     restart: unless-stopped
+    # GPU support for Docker Desktop on Windows
+    runtime: nvidia
     # Scale workers as needed
     scale: 1
 
