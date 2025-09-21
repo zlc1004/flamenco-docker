@@ -17,4 +17,8 @@ RUN mkdir -p /mnt/shared/flamenco /tmp/flamenco-worker-cache
 ENV MANAGER_URL=http://localhost:8080
 ENV FLAMENCO_WORKER_NAME="Flamenco Worker"
 
-CMD ["sh", "-c", "/flamenco/flamenco-worker -manager ${MANAGER_URL} -restart-exit-code 47"]
+# Create a simple entrypoint script to handle the command properly
+RUN echo '#!/bin/bash\nexec /flamenco/flamenco-worker -manager "$MANAGER_URL" -restart-exit-code 47' > /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]
