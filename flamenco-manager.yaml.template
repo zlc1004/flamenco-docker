@@ -24,4 +24,4 @@ variables:
   blenderArgs:
     values:
       - platform: all
-        value: -b -y -E CYCLES -a -- --cycles-device OPTIX --cycles-device-type GPU
+        value: -b -y -E CYCLES -a -- --cycles-device CUDA --cycles-device-type GPU
