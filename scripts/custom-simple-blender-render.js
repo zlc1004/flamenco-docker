@@ -85,6 +85,11 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         });
         task.addCommand(mkdirCommand);
         
+        // Parse the chunk format (e.g., "1-500", "501-1000")
+        const frameRange = chunk.split("-");
+        const startFrame = frameRange[0];
+        const endFrame = frameRange[1] || frameRange[0];
+        
         const command = author.Command("blender-render", {
             exe: "{blender}",
             exeArgs: "{blenderArgs}",
@@ -93,8 +98,8 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
             args: baseArgs.concat([
                 "--render-output", renderOutput,
                 "--render-format", settings.format,
-                "--frame-start", chunk.split("..")[0],
-                "--frame-end", chunk.split("..")[1] || chunk.split("..")[0],
+                "--frame-start", startFrame,
+                "--frame-end", endFrame,
             ])
         });
         task.addCommand(command);
