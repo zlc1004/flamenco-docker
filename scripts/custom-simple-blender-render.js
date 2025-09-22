@@ -96,10 +96,9 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
             argsBefore: [],
             blendfile: settings.blendfile,
             args: baseArgs.concat([
-                "--render-output", renderOutput,
+                "-o", renderOutput,
                 "--render-format", settings.format,
-                "--frame-start", startFrame,
-                "--frame-end", endFrame,
+                "-f", startFrame + ".." + endFrame,
             ])
         });
         task.addCommand(command);
