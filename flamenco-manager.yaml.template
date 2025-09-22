@@ -12,57 +12,6 @@ task_timeout: ${FLAMENCO_TASK_TIMEOUT}
 worker_timeout: ${FLAMENCO_WORKER_TIMEOUT}
 blocklist_threshold: ${FLAMENCO_BLOCKLIST_THRESHOLD}
 task_fail_after_softfail_count: ${FLAMENCO_TASK_FAIL_AFTER_SOFTFAIL_COUNT}
-path_replacement:
-  linux:
-    # Common Windows drive mappings
-    - from: "C:\\"
-      to: "/mnt/shared/projects/"
-    - from: "C:/"
-      to: "/mnt/shared/projects/"
-    - from: "D:\\"
-      to: "/mnt/shared/projects/"
-    - from: "D:/"
-      to: "/mnt/shared/projects/"
-    # Blender Foundation paths
-    - from: "C:/Program Files/Blender Foundation"
-      to: "/mnt/shared/projects"
-    - from: "C:\\Program Files\\Blender Foundation"
-      to: "/mnt/shared/projects"
-    # Common user directories
-    - from: "C:/Users"
-      to: "/mnt/shared/projects/Users"
-    - from: "C:\\Users"
-      to: "/mnt/shared/projects/Users"
-    # Documents and Desktop
-    - from: "C:/Users/*/Documents"
-      to: "/mnt/shared/projects/Documents"
-    - from: "C:\\Users\\*\\Documents"
-      to: "/mnt/shared/projects/Documents"
-    - from: "C:/Users/*/Desktop"
-      to: "/mnt/shared/projects/Desktop"
-    - from: "C:\\Users\\*\\Desktop"
-      to: "/mnt/shared/projects/Desktop"
-    # Temp directories
-    - from: "C:/Windows/Temp"
-      to: "/tmp"
-    - from: "C:\\Windows\\Temp"
-      to: "/tmp"
-    - from: "C:/temp"
-      to: "/tmp"
-    - from: "C:\\temp"
-      to: "/tmp"
-  windows:
-    # Reverse mappings for Windows clients
-    - from: "/mnt/shared/projects/"
-      to: "C:/"
-    - from: "/mnt/shared/projects/Users"
-      to: "C:/Users"
-    - from: "/mnt/shared/projects/Documents"
-      to: "C:/Users/Documents"
-    - from: "/mnt/shared/projects/Desktop"
-      to: "C:/Users/Desktop"
-    - from: "/tmp"
-      to: "C:/temp"
 variables:
   blender:
     values:
@@ -76,19 +25,3 @@ variables:
     values:
       - platform: all
         value: -b -y -E CYCLES -- --cycles-device CUDA
-  project_path:
-    values:
-      - platform: linux
-        value: /mnt/shared/projects
-      - platform: windows  
-        value: "C:/Program Files/Blender Foundation/Blender 4.4"
-      - platform: darwin
-        value: /mnt/shared/projects
-  ffmpeg:
-    values:
-      - platform: linux
-        value: /flamenco/tools/ffmpeg-linux-amd64
-      - platform: windows
-        value: /flamenco/tools/ffmpeg-linux-amd64
-      - platform: darwin
-        value: /flamenco/tools/ffmpeg-linux-amd64
