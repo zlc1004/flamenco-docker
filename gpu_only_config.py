@@ -1,36 +1,75 @@
 import bpy
 
-# Force Cycles GPU-only configuration
-print("=== Configuring Blender for GPU-only rendering ===")
+def force_gpu_configuration():
+    """Force GPU configuration function"""
+    try:
+        print("=== Forcing GPU Configuration ===")
+        
+        # Set render engine to Cycles
+        bpy.context.scene.render.engine = 'CYCLES'
+        print("✓ Render engine set to CYCLES")
 
-# Set render engine to Cycles
-bpy.context.scene.render.engine = 'CYCLES'
+        # Get cycles preferences first
+        prefs = bpy.context.preferences.addons['cycles'].preferences
+        
+        # Set compute device type to CUDA FIRST
+        prefs.compute_device_type = 'CUDA'
+        print("✓ Compute device type set to CUDA")
 
-# Force GPU device
-bpy.context.scene.cycles.device = 'GPU'
+        # Refresh devices and force CUDA
+        prefs.get_devices()
+        
+        # Force enable CUDA devices, disable CPU
+        cuda_count = 0
+        for device in prefs.devices:
+            if device.type == 'CUDA':
+                device.use = True
+                cuda_count += 1
+                print(f"✓ Enabled CUDA device: {device.name}")
+            else:
+                device.use = False
+                print(f"✗ Disabled device: {device.name} ({device.type})")
+        
+        # AFTER setting up devices, force GPU device on scene
+        bpy.context.scene.cycles.device = 'GPU'
+        print("✓ Cycles device set to GPU")
+        
+        # Additional scene-level GPU forcing
+        if hasattr(bpy.context.scene.cycles, 'samples'):
+            print(f"Current samples: {bpy.context.scene.cycles.samples}")
+        
+        print(f"CUDA devices enabled: {cuda_count}")
+        print(f"Scene cycles device: {bpy.context.scene.cycles.device}")
+        return cuda_count > 0
+        
+    except Exception as e:
+        print(f"ERROR in GPU configuration: {e}")
+        return False
 
-# Get cycles preferences
-prefs = bpy.context.preferences.addons['cycles'].preferences
+# Initial GPU Configuration
+print("=== Initial GPU Configuration Script ===")
+force_gpu_configuration()
 
-# Set compute device type to CUDA
-prefs.compute_device_type = 'CUDA'
+# Set up multiple timers to aggressively re-force GPU settings
+def reapply_gpu_timer():
+    """Timer function to reapply GPU settings after scene load"""
+    print("=== Timer: Re-applying GPU Settings After Scene Load ===")
+    success = force_gpu_configuration()
+    if success:
+        print("✓ GPU settings successfully reapplied after scene load")
+    return None  # Don't repeat the timer
 
-# Disable all CPU devices, enable only CUDA devices
-for device in prefs.devices:
-    if device.type == 'CUDA':
-        device.use = True
-        print(f"Enabled CUDA device: {device.name}")
-    else:
-        device.use = False
-        print(f"Disabled device: {device.name} ({device.type})")
+def late_gpu_timer():
+    """Later timer to catch any final overrides"""
+    print("=== Late Timer: Final GPU Configuration Check ===")
+    success = force_gpu_configuration()
+    if success:
+        print("✓ Final GPU settings applied")
+    return None
 
-print("=== GPU-only configuration complete ===")
-print(f"Render engine: {bpy.context.scene.render.engine}")
-print(f"Device: {bpy.context.scene.cycles.device}")
-print(f"Compute device type: {prefs.compute_device_type}")
+# Register multiple timers to catch different loading phases
+bpy.app.timers.register(reapply_gpu_timer, first_interval=0.1)  # Very early
+bpy.app.timers.register(late_gpu_timer, first_interval=1.0)     # Later check
 
-# Count enabled devices by type
-cuda_devices = sum(1 for device in prefs.devices if device.type == 'CUDA' and device.use)
-cpu_devices = sum(1 for device in prefs.devices if device.type == 'CPU' and device.use)
-print(f"CUDA devices enabled: {cuda_devices}")
-print(f"CPU devices enabled: {cpu_devices}")
+print("=== GPU Configuration Script Complete ===")
+print("Multiple timers registered to aggressively enforce GPU settings")
