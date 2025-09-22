@@ -36,7 +36,7 @@ services:
       - MANAGER_URL=http://flamenco-manager:8080
       - FLAMENCO_WORKER_NAME=Flamenco Worker
       - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - NVIDIA_DRIVER_CAPABILITIES=graphics,compute,utility
       # Headless rendering configuration
       - DISPLAY=:99
       - XDG_RUNTIME_DIR=/tmp

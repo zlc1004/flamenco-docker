@@ -28,7 +28,7 @@ ENV XDG_RUNTIME_DIR=/tmp
 ENV LIBGL_ALWAYS_SOFTWARE=1
 
 # Create a simple entrypoint script to handle the command properly
-RUN echo '#!/bin/bash\n# Start Xvfb for headless operation\nXvfb :99 -screen 0 1920x1080x24 &\n# Wait a moment for Xvfb to start\nsleep 2\n# Set Blender to use GPU by default\nexport CYCLES_DEVICE=CUDA\n# Start flamenco worker\nexec /flamenco/flamenco-worker -manager "$MANAGER_URL" -restart-exit-code 47' > /entrypoint.sh && \
-    chmod +x /entrypoint.sh
+COPY ./entrypoint-worker.sh /entrypoint-worker.sh
+RUN chmod +x /entrypoint-worker.sh
 
-CMD ["/entrypoint.sh"]
+CMD ["/entrypoint-worker.sh"]
