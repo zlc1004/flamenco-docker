@@ -52,8 +52,14 @@ services:
     depends_on:
       - flamenco-manager
     restart: unless-stopped
-    # GPU support for Docker Desktop on Windows
-    runtime: nvidia
+    # GPU support using LinuxServer recommended configuration
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [compute,video,graphics,utility]
     # Scale workers as needed
     scale: 1
 
