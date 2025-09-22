@@ -99,7 +99,11 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
                 "-o", renderOutput,
                 "--render-format", settings.format,
                 "-f", startFrame + ".." + endFrame,
-            ])
+            ]),
+            env: {
+                "CYCLES_DEVICE": "CUDA",
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
         });
         task.addCommand(command);
         renderTasks.push(task);
