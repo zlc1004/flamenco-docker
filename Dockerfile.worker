@@ -7,6 +7,7 @@ RUN mkdir -p /flamenco && tar -zxvf /tmp/flamenco.tar.gz -C /flamenco
 FROM docker.io/linuxserver/blender:4.2.3
 
 COPY --from=package-retrieval /flamenco/flamenco-3.5-linux-amd64 /flamenco
+COPY ./gpu_only_config.py /flamenco/gpu_only_config.py
 
 WORKDIR /flamenco
 
