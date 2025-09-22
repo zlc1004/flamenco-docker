@@ -23,6 +23,7 @@ services:
     volumes:
       - ./flamenco-manager-storage:/flamenco/flamenco-manager-storage
       - ./shared-storage:/mnt/shared/flamenco
+      - ./shared-storage/projects:/mnt/shared/projects
       - ./data:/flamenco/data  # For database and other persistent data
     networks:
       - flamenco-network
@@ -49,6 +50,7 @@ services:
       - BLENDER_USER_CONFIG=/tmp/blender_config
     volumes:
       - ./shared-storage:/mnt/shared/flamenco
+      - ./shared-storage/projects:/mnt/shared/projects
       - ./worker-cache:/tmp/flamenco-worker-cache
     networks:
       - flamenco-network

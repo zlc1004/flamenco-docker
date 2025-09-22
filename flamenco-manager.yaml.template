@@ -12,6 +12,13 @@ task_timeout: ${FLAMENCO_TASK_TIMEOUT}
 worker_timeout: ${FLAMENCO_WORKER_TIMEOUT}
 blocklist_threshold: ${FLAMENCO_BLOCKLIST_THRESHOLD}
 task_fail_after_softfail_count: ${FLAMENCO_TASK_FAIL_AFTER_SOFTFAIL_COUNT}
+path_replacement:
+  linux:
+    - from: "C:/Program Files/Blender Foundation/Blender 4.4"
+      to: "/mnt/shared/projects"
+  windows:
+    - from: "/mnt/shared/projects"
+      to: "C:/Program Files/Blender Foundation/Blender 4.4"
 variables:
   blender:
     values:
@@ -25,3 +32,19 @@ variables:
     values:
       - platform: all
         value: -b -y -E CYCLES -- --cycles-device CUDA
+  project_path:
+    values:
+      - platform: linux
+        value: /mnt/shared/projects
+      - platform: windows  
+        value: "C:/Program Files/Blender Foundation/Blender 4.4"
+      - platform: darwin
+        value: /mnt/shared/projects
+  ffmpeg:
+    values:
+      - platform: linux
+        value: /flamenco/tools/ffmpeg-linux-amd64
+      - platform: windows
+        value: /flamenco/tools/ffmpeg-linux-amd64
+      - platform: darwin
+        value: /flamenco/tools/ffmpeg-linux-amd64
