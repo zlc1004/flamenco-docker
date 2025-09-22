@@ -87,10 +87,43 @@ function renderOutputPath(job) {
 const enable_all_optix = `
 import bpy
 
-cycles_prefs = bpy.context.preferences.addons['cycles'].preferences
-cycles_prefs.compute_device_type = 'OPTIX'
-for dev in cycles_prefs.get_devices_for_type('OPTIX'):
-    dev.use = (dev.type != 'CPU')
+print("=== Configuring Blender for OPTIX GPU-only rendering ===")
+
+# Set render engine to Cycles
+bpy.context.scene.render.engine = 'CYCLES'
+
+# Get cycles preferences
+prefs = bpy.context.preferences.addons['cycles'].preferences
+
+# Set compute device type to OPTIX
+prefs.compute_device_type = 'OPTIX'
+
+# Refresh devices to ensure we have the latest list
+prefs.get_devices()
+
+# Completely disable CPU devices, enable only OPTIX devices
+optix_count = 0
+cpu_count = 0
+for device in prefs.devices:
+    if device.type == 'OPTIX':
+        device.use = True
+        optix_count += 1
+        print(f"✓ Enabled OPTIX device: {device.name}")
+    else:
+        device.use = False
+        if device.type == 'CPU':
+            cpu_count += 1
+        print(f"✗ Disabled device: {device.name} ({device.type})")
+
+# Force GPU device on scene
+bpy.context.scene.cycles.device = 'GPU'
+
+print(f"=== OPTIX GPU-only configuration complete ===")
+print(f"Render engine: {bpy.context.scene.render.engine}")
+print(f"Scene device: {bpy.context.scene.cycles.device}")
+print(f"Compute device type: {prefs.compute_device_type}")
+print(f"OPTIX devices enabled: {optix_count}")
+print(f"CPU devices disabled: {cpu_count}")
 `;
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
