@@ -14,6 +14,7 @@ WORKDIR /flamenco
 
 # Copy configuration files
 COPY ./flamenco-manager.yaml.template ./flamenco-manager.yaml.template
+COPY ./scripts ./scripts
 
 # Create directories for data persistence
 RUN mkdir -p /flamenco/flamenco-manager-storage /flamenco/data /mnt/shared/flamenco
