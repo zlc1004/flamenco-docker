@@ -16,7 +16,7 @@ const JOB_TYPE = {
           visible: "submission" },
 
         { key: "render_output_path", type: "string", subtype: "file_path", editable: false,
-          eval: "f'{jobname}/render/######'",
+          eval: "f'/mnt/shared/flamenco/jobs/{jobname}/render/######'",
           description: "Final file path of where render output will be saved"},
 
         // Automatically evaluated settings:
