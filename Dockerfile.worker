@@ -27,8 +27,13 @@ ENV DISPLAY=:99
 ENV XDG_RUNTIME_DIR=/tmp
 ENV LIBGL_ALWAYS_SOFTWARE=1
 
-# Create a simple entrypoint script to handle the command properly
-COPY ./entrypoint-worker.sh /entrypoint-worker.sh
-RUN chmod +x /entrypoint-worker.sh
+# Copy the OptiX fix script as a custom init script
+COPY ./entrypoint-worker.sh /etc/cont-init.d/99-optix-fix
+RUN chmod +x /etc/cont-init.d/99-optix-fix
 
-CMD ["/entrypoint-worker.sh"]
+# Create the actual worker startup script
+RUN echo '#!/bin/bash\n# Set Blender to use GPU by default\nexport CYCLES_DEVICE=CUDA\n# Start flamenco worker\nexec /flamenco/flamenco-worker -manager "$MANAGER_URL" -restart-exit-code 47' > /usr/local/bin/start-worker.sh && \
+    chmod +x /usr/local/bin/start-worker.sh
+
+# Override the default CMD to run our worker
+CMD ["/usr/local/bin/start-worker.sh"]

@@ -1,10 +1,7 @@
-#!/bin/bash
+#!/usr/bin/with-contenv bash
 
-# Start Xvfb for headless operation
-Xvfb :99 -screen 0 1920x1080x24 &
-
-# Wait a moment for Xvfb to start
-sleep 2
+# LinuxServer custom init script for OptiX fix
+echo "**** Setting up OptiX support ****"
 
 # Fix OptiX symlink issue for NVIDIA_DRIVER_CAPABILITIES=graphics
 if [ -f /usr/lib/x86_64-linux-gnu/libnvoptix.so.1 ] && [ ! -s /usr/lib/x86_64-linux-gnu/libnvoptix.so.1 ]; then
@@ -35,8 +32,4 @@ fi
 echo "Available OptiX libraries:"
 ls -la /usr/lib/x86_64-linux-gnu/libnvoptix* 2>/dev/null || echo "No OptiX libraries found"
 
-# Set Blender to use GPU by default (try OptiX first, fallback to CUDA)
-export CYCLES_DEVICE=CUDA
-
-# Start flamenco worker
-exec /flamenco/flamenco-worker -manager "$MANAGER_URL" -restart-exit-code 47
+echo "**** OptiX setup complete ****"
