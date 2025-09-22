@@ -77,6 +77,14 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
 
     for (let chunk of chunks) {
         const task = author.Task(`render-${chunk}`, "blender");
+        
+        // Add a command to create the render directory first
+        const mkdirCommand = author.Command("exec", {
+            exe: "mkdir",
+            args: ["-p", renderDir]
+        });
+        task.addCommand(mkdirCommand);
+        
         const command = author.Command("blender-render", {
             exe: "{blender}",
             exeArgs: "{blenderArgs}",
