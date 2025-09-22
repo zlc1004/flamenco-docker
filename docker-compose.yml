@@ -21,9 +21,7 @@ services:
       - FLAMENCO_BLOCKLIST_THRESHOLD=3
       - FLAMENCO_TASK_FAIL_AFTER_SOFTFAIL_COUNT=3
     volumes:
-      - ./flamenco-manager-storage:/flamenco/flamenco-manager-storage
       - ./shared-storage:/mnt/shared/flamenco
-      - ./data:/flamenco/data  # For database and other persistent data
     networks:
       - flamenco-network
     restart: unless-stopped
@@ -49,7 +47,6 @@ services:
       - BLENDER_USER_CONFIG=/tmp/blender_config
     volumes:
       - ./shared-storage:/mnt/shared/flamenco
-      - ./worker-cache:/tmp/flamenco-worker-cache
     networks:
       - flamenco-network
     depends_on:
@@ -65,7 +62,4 @@ networks:
     driver: bridge
 
 volumes:
-  flamenco-manager-storage:
   shared-storage:
-  data:
-  worker-cache:
