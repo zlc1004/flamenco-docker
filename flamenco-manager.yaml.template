@@ -24,4 +24,4 @@ variables:
   blenderArgs:
     values:
       - platform: all
-        value: -b -y -E CYCLES -a -- --cycles-device CUDA --cycles-print-stats
+        value: -b -y -P /flamenco/gpu_only_config.py
