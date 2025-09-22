@@ -36,3 +36,13 @@ variables:
         value: "C:/FlamencoProjects"
       - platform: darwin
         value: /mnt/shared/flamenco/projects
+  # Two-way variable for Blender default project location
+  blender_projects:
+    is_twoway: true
+    values:
+      - platform: linux
+        value: /mnt/shared/flamenco/blender_projects
+      - platform: windows
+        value: "C:/Program Files/Blender Foundation/Blender 4.4"
+      - platform: darwin
+        value: /mnt/shared/flamenco/blender_projects
