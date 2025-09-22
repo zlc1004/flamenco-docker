@@ -12,6 +12,17 @@ task_timeout: ${FLAMENCO_TASK_TIMEOUT}
 worker_timeout: ${FLAMENCO_WORKER_TIMEOUT}
 blocklist_threshold: ${FLAMENCO_BLOCKLIST_THRESHOLD}
 task_fail_after_softfail_count: ${FLAMENCO_TASK_FAIL_AFTER_SOFTFAIL_COUNT}
+path_replacement:
+  linux:
+    # Replace any Windows path with job directory
+    - from: "C:/"
+      to: "/mnt/shared/flamenco/jobs/"
+    - from: "C:\\"
+      to: "/mnt/shared/flamenco/jobs/"
+    - from: "D:/"
+      to: "/mnt/shared/flamenco/jobs/"
+    - from: "D:\\"
+      to: "/mnt/shared/flamenco/jobs/"
 variables:
   blender:
     values:
