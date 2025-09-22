@@ -25,10 +25,13 @@ for device in prefs.devices:
         print(f"Disabled device: {device.name} ({device.type})")
 
 # Force GPU-only rendering (disable CPU)
-bpy.context.scene.cycles.use_cpu = False
+try:
+    bpy.context.scene.cycles.use_cpu = False
+    print("CPU rendering disabled")
+except AttributeError:
+    print("use_cpu attribute not available in this Blender version")
 
 print("=== GPU-only configuration complete ===")
 print(f"Render engine: {bpy.context.scene.render.engine}")
 print(f"Device: {bpy.context.scene.cycles.device}")
 print(f"Compute device type: {prefs.compute_device_type}")
-print(f"CPU rendering disabled: {not bpy.context.scene.cycles.use_cpu}")
