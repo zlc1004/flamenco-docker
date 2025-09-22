@@ -98,9 +98,9 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
     let renderTasks = [];
     let chunks = frameChunker(settings.frames, settings.chunk_size);
 
-    // Extra arguments for Blender.
-    const blender_args_before = shellSplit(settings.blender_args_before);
-    const blender_args_after = shellSplit(settings.blender_args_after);
+    // Extra arguments for Blender - simple split on spaces or empty array if not provided
+    const blender_args_before = settings.blender_args_before ? settings.blender_args_before.split(' ').filter(arg => arg.length > 0) : [];
+    const blender_args_after = settings.blender_args_after ? settings.blender_args_after.split(' ').filter(arg => arg.length > 0) : [];
 
     let baseArgs = [];
     if (settings.scene) {
