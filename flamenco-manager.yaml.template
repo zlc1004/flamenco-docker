@@ -12,17 +12,6 @@ task_timeout: ${FLAMENCO_TASK_TIMEOUT}
 worker_timeout: ${FLAMENCO_WORKER_TIMEOUT}
 blocklist_threshold: ${FLAMENCO_BLOCKLIST_THRESHOLD}
 task_fail_after_softfail_count: ${FLAMENCO_TASK_FAIL_AFTER_SOFTFAIL_COUNT}
-path_replacement:
-  linux:
-    # Replace any Windows path with job directory
-    - from: "C:/"
-      to: "/mnt/shared/flamenco/jobs/"
-    - from: "C:\\"
-      to: "/mnt/shared/flamenco/jobs/"
-    - from: "D:/"
-      to: "/mnt/shared/flamenco/jobs/"
-    - from: "D:\\"
-      to: "/mnt/shared/flamenco/jobs/"
 variables:
   blender:
     values:
@@ -36,3 +25,14 @@ variables:
     values:
       - platform: all
         value: -b -y -E CYCLES -- --cycles-device CUDA
+  # Two-way variable for shared project directory
+  # Users should save projects to this location on Windows
+  projects:
+    is_twoway: true
+    values:
+      - platform: linux
+        value: /mnt/shared/flamenco/projects
+      - platform: windows
+        value: "C:/FlamencoProjects"
+      - platform: darwin
+        value: /mnt/shared/flamenco/projects
