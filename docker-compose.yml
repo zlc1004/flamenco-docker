@@ -45,6 +45,8 @@ services:
       # Force GPU rendering
       - CYCLES_DEVICE=CUDA
       - BLENDER_GPU_COMPUTE=1
+      - CUDA_VISIBLE_DEVICES=0
+      - BLENDER_USER_CONFIG=/tmp/blender_config
     volumes:
       - ./shared-storage:/mnt/shared/flamenco
       - ./worker-cache:/tmp/flamenco-worker-cache
