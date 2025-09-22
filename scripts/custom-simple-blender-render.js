@@ -91,7 +91,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
             argsBefore: [],
             blendfile: settings.blendfile,
             args: baseArgs.concat([
-                "--render-output", path.join(renderDir, path.basename(renderOutput)),
+                "--render-output", renderOutput,
                 "--render-format", settings.format,
                 "--render-frame", chunk.replaceAll("-", ".."), // Convert to Blender frame range notation.
             ])
