@@ -23,6 +23,20 @@ RUN rm -f /etc/apt/sources.list.d/cuda*.list \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a blender wrapper script for Flamenco compatibility
+# BlenderProc uses its own Blender installation, we need to find and expose it
+RUN echo '#!/bin/bash' > /usr/local/bin/blender && \
+    echo '# BlenderProc Blender wrapper for Flamenco' >> /usr/local/bin/blender && \
+    echo 'BLENDER_EXECUTABLE=$(find /root -name "blender" -type f -executable 2>/dev/null | grep -v "blender-launcher" | head -1)' >> /usr/local/bin/blender && \
+    echo 'if [ -n "$BLENDER_EXECUTABLE" ]; then' >> /usr/local/bin/blender && \
+    echo '    exec "$BLENDER_EXECUTABLE" "$@"' >> /usr/local/bin/blender && \
+    echo 'else' >> /usr/local/bin/blender && \
+    echo '    echo "Blender executable not found in BlenderProc installation"' >> /usr/local/bin/blender && \
+    echo '    find /root -name "*blender*" -type f 2>/dev/null | head -10' >> /usr/local/bin/blender && \
+    echo '    exit 1' >> /usr/local/bin/blender && \
+    echo 'fi' >> /usr/local/bin/blender && \
+    chmod +x /usr/local/bin/blender
+
 # Don't switch to a specific user - let BlenderProc use its default user
 
 # Set default environment variables (can be overridden by docker-compose)
