@@ -23,10 +23,9 @@ RUN rm -f /etc/apt/sources.list.d/cuda*.list \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a blender wrapper script for Flamenco compatibility
-# BlenderProc uses its own Blender installation, we need to find and expose it
+# Create a blender wrapper script for Flamenco compatibility with headless support
 RUN echo '#!/bin/bash' > /usr/local/bin/blender && \
-    echo '# BlenderProc Blender wrapper for Flamenco' >> /usr/local/bin/blender && \
+    echo '# BlenderProc Blender wrapper for Flamenco with headless support' >> /usr/local/bin/blender && \
     echo '# Look for actual Blender executable in BlenderProc installation' >> /usr/local/bin/blender && \
     echo 'BLENDER_EXECUTABLE=$(find /home -path "*/blender/blender-*/blender" -type f -executable 2>/dev/null | grep -v softwaregl | head -1)' >> /usr/local/bin/blender && \
     echo 'if [ -z "$BLENDER_EXECUTABLE" ]; then' >> /usr/local/bin/blender && \
@@ -34,6 +33,15 @@ RUN echo '#!/bin/bash' > /usr/local/bin/blender && \
     echo 'fi' >> /usr/local/bin/blender && \
     echo 'if [ -n "$BLENDER_EXECUTABLE" ] && [ "$BLENDER_EXECUTABLE" != "/usr/local/bin/blender" ]; then' >> /usr/local/bin/blender && \
     echo '    echo "Using Blender: $BLENDER_EXECUTABLE" >&2' >> /usr/local/bin/blender && \
+    echo '    # Start Xvfb if not already running and no DISPLAY set' >> /usr/local/bin/blender && \
+    echo '    if [ -z "$DISPLAY" ] || ! xset q >/dev/null 2>&1; then' >> /usr/local/bin/blender && \
+    echo '        echo "Starting virtual display for headless rendering..." >&2' >> /usr/local/bin/blender && \
+    echo '        Xvfb :99 -screen 0 1920x1080x24 >/dev/null 2>&1 &' >> /usr/local/bin/blender && \
+    echo '        XVFB_PID=$!' >> /usr/local/bin/blender && \
+    echo '        export DISPLAY=:99' >> /usr/local/bin/blender && \
+    echo '        sleep 2  # Give Xvfb time to start' >> /usr/local/bin/blender && \
+    echo '        trap "kill $XVFB_PID 2>/dev/null" EXIT' >> /usr/local/bin/blender && \
+    echo '    fi' >> /usr/local/bin/blender && \
     echo '    exec "$BLENDER_EXECUTABLE" "$@"' >> /usr/local/bin/blender && \
     echo 'else' >> /usr/local/bin/blender && \
     echo '    echo "No suitable Blender executable found" >&2' >> /usr/local/bin/blender && \
