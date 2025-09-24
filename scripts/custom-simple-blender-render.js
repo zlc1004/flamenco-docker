@@ -16,7 +16,7 @@ const JOB_TYPE = {
           visible: "submission" },
 
         { key: "render_output_path", type: "string", subtype: "file_path", editable: false,
-          eval: "str(Path(bpy.path.abspath('//')).joinpath('render', '######')) if bpy.path.abspath('//').startswith('/mnt/shared/flamenco/jobs/') else f'/mnt/shared/flamenco/jobs/{jobname}/render/######'",
+          eval: "str(Path(bpy.data.filepath).parent.joinpath('render', '######')) if bpy.data.filepath else f'/mnt/shared/flamenco/jobs/{jobname}/render/######'",
           description: "Final file path of where render output will be saved"},
 
         // Extra CLI arguments for Blender, for debugging purposes.
