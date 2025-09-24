@@ -3,7 +3,7 @@ const JOB_TYPE = {
     label: "Test GPU Devices Available",
     description: "Test what GPU devices are detected by Blender",
     settings: [
-        // No settings needed - uses factory startup
+        { key: "blendfile", type: "string", required: false, description: "Not used - will use factory startup", visible: "web" },
     ]
 };
 
@@ -52,14 +52,13 @@ function compileJob(job) {
     
     const task = author.Task("test-gpu-devices", "blender");
     
-    const command = author.Command("blender-render", {
+    // Use exec command instead to run blender directly
+    const command = author.Command("exec", {
         exe: "{blender}",
-        exeArgs: "-b -y --factory-startup",
-        argsBefore: [],
         args: [
-            '--python-expr',
-            test_gpu_devices,
-        ],
+            "-b", "-y", "--factory-startup",
+            "--python-expr", test_gpu_devices
+        ]
     });
     
     task.addCommand(command);
