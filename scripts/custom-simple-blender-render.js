@@ -51,36 +51,27 @@ function compileJob(job) {
     print("job: ", job);
 
     const settings = job.settings;
-    const renderOutput = renderOutputPath(job);
+    
+    // Extract the actual job directory from the blend file path
+    const blendFilePath = settings.blendfile;
+    const jobDir = path.dirname(blendFilePath); // e.g., "/mnt/shared/flamenco/jobs/Untitled1-ym2c"
+    const actualRenderOutput = path.join(jobDir, "render", "######");
+    
+    print("Blend file path:", blendFilePath);
+    print("Job directory:", jobDir);
+    print("Render output:", actualRenderOutput);
+    
+    // Update the render output path to use the actual job directory
+    settings.render_output_path = actualRenderOutput;
 
-    // Make sure that when the job is investigated later, it shows the
-    // actually-used render output:
-    settings.render_output_path = renderOutput;
-
-    const renderDir = path.dirname(renderOutput);
-    const renderTasks = authorRenderTasks(settings, renderDir, renderOutput);
+    const renderDir = path.dirname(actualRenderOutput);
+    const renderTasks = authorRenderTasks(settings, renderDir, actualRenderOutput);
 
     for (const rt of renderTasks) {
         job.addTask(rt);
     }
 
     cleanupJobSettings(job.settings);
-}
-
-// Do field replacement on the render output path.
-function renderOutputPath(job) {
-    let path = job.settings.render_output_path;
-    if (!path) {
-        throw "no render_output_path setting!";
-    }
-    return path.replace(/{([^}]+)}/g, (match, group0) => {
-        switch (group0) {
-        case "timestamp":
-            return formatTimestampLocal(job.created);
-        default:
-            return match;
-        }
-    });
 }
 
 // CUDA GPU enablement Python code
