@@ -31,8 +31,6 @@ services:
       context: .
       dockerfile: Dockerfile.worker
     container_name: blender-worker
-    # Use host user ID as recommended by BlenderProc documentation
-    user: "${UID:-1000}:${GID:-1000}"
     environment:
       - MANAGER_URL=http://flamenco-manager:8080
       - FLAMENCO_WORKER_NAME=BlenderProc Worker

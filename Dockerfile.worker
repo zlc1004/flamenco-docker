@@ -11,7 +11,8 @@ COPY ./gpu_only_config.py /flamenco/gpu_only_config.py
 
 WORKDIR /flamenco
 
-# Create necessary directories with proper permissions
+# Create necessary directories with proper permissions (switch to root temporarily)
+USER root
 RUN mkdir -p /mnt/shared/flamenco /tmp/flamenco-worker-cache /data \
     && chmod 777 /mnt/shared/flamenco /tmp/flamenco-worker-cache /data
 
@@ -19,6 +20,9 @@ RUN mkdir -p /mnt/shared/flamenco /tmp/flamenco-worker-cache /data \
 RUN apt-get update && apt-get install -y \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
+
+# Switch back to the original BlenderProc user
+USER blender
 
 # Set default environment variables (can be overridden by docker-compose)
 ENV MANAGER_URL=http://localhost:8080
