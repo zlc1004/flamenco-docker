@@ -27,23 +27,23 @@ RUN rm -f /etc/apt/sources.list.d/cuda*.list \
 # BlenderProc uses its own Blender installation, we need to find and expose it
 RUN echo '#!/bin/bash' > /usr/local/bin/blender && \
     echo '# BlenderProc Blender wrapper for Flamenco' >> /usr/local/bin/blender && \
-    echo 'BLENDER_EXECUTABLE=$(find / -path "*/blender/blender" -type f -executable 2>/dev/null | grep -v snap | head -1)' >> /usr/local/bin/blender && \
+    echo '# Exclude this wrapper script from search to avoid infinite recursion' >> /usr/local/bin/blender && \
+    echo 'BLENDER_EXECUTABLE=$(find / -path "*/blender/blender" -type f -executable 2>/dev/null | grep -v "/usr/local/bin/blender" | grep -v snap | head -1)' >> /usr/local/bin/blender && \
     echo 'if [ -z "$BLENDER_EXECUTABLE" ]; then' >> /usr/local/bin/blender && \
-    echo '    BLENDER_EXECUTABLE=$(find / -name "blender" -type f -executable 2>/dev/null | grep -v "blender-launcher" | grep -v snap | grep -v proc | head -1)' >> /usr/local/bin/blender && \
+    echo '    BLENDER_EXECUTABLE=$(find / -name "blender" -type f -executable 2>/dev/null | grep -v "/usr/local/bin/blender" | grep -v "blender-launcher" | grep -v snap | grep -v proc | head -1)' >> /usr/local/bin/blender && \
     echo 'fi' >> /usr/local/bin/blender && \
-    echo 'if [ -n "$BLENDER_EXECUTABLE" ]; then' >> /usr/local/bin/blender && \
+    echo 'if [ -n "$BLENDER_EXECUTABLE" ] && [ "$BLENDER_EXECUTABLE" != "/usr/local/bin/blender" ]; then' >> /usr/local/bin/blender && \
     echo '    echo "Using Blender: $BLENDER_EXECUTABLE" >&2' >> /usr/local/bin/blender && \
     echo '    exec "$BLENDER_EXECUTABLE" "$@"' >> /usr/local/bin/blender && \
     echo 'else' >> /usr/local/bin/blender && \
-    echo '    echo "Blender executable not found in BlenderProc installation" >&2' >> /usr/local/bin/blender && \
-    echo '    echo "Searching for blender files:" >&2' >> /usr/local/bin/blender && \
-    echo '    find /usr/local /opt /home /root -name "*blender*" -type f 2>/dev/null | head -10 >&2' >> /usr/local/bin/blender && \
+    echo '    echo "Searching for actual Blender executable (excluding wrapper)..." >&2' >> /usr/local/bin/blender && \
+    echo '    find /usr/local /opt /home /root -name "*blender*" -type f -executable 2>/dev/null | grep -v "/usr/local/bin/blender" | head -10 >&2' >> /usr/local/bin/blender && \
     echo '    echo "Trying blenderproc command directly..." >&2' >> /usr/local/bin/blender && \
     echo '    if command -v blenderproc >/dev/null 2>&1; then' >> /usr/local/bin/blender && \
     echo '        echo "Using blenderproc wrapper" >&2' >> /usr/local/bin/blender && \
-    echo '        exec python3 -m blenderproc.run "$@"' >> /usr/local/bin/blender && \
+    echo '        exec python3 -c "import blenderproc; blenderproc.cli()" "$@"' >> /usr/local/bin/blender && \
     echo '    else' >> /usr/local/bin/blender && \
-    echo '        echo "blenderproc command also not found" >&2' >> /usr/local/bin/blender && \
+    echo '        echo "Neither direct blender nor blenderproc found" >&2' >> /usr/local/bin/blender && \
     echo '        exit 1' >> /usr/local/bin/blender && \
     echo '    fi' >> /usr/local/bin/blender && \
     echo 'fi' >> /usr/local/bin/blender && \
