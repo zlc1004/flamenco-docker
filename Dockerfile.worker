@@ -23,8 +23,7 @@ RUN rm -f /etc/apt/sources.list.d/cuda*.list \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
-# Switch back to the original BlenderProc user
-USER blender
+# Don't switch to a specific user - let BlenderProc use its default user
 
 # Set default environment variables (can be overridden by docker-compose)
 ENV MANAGER_URL=http://localhost:8080
