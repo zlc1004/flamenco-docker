@@ -17,7 +17,9 @@ RUN mkdir -p /mnt/shared/flamenco /tmp/flamenco-worker-cache /data \
     && chmod 777 /mnt/shared/flamenco /tmp/flamenco-worker-cache /data
 
 # Install additional dependencies (BlenderProc image should already have most GPU support)
-RUN apt-get update && apt-get install -y \
+# Remove problematic CUDA repository and install minimal dependencies
+RUN rm -f /etc/apt/sources.list.d/cuda*.list \
+    && apt-get update && apt-get install -y \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
