@@ -9,7 +9,7 @@ const JOB_TYPE = {
         { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: "web" },
         { key: "format", type: "string", required: true, eval: "C.scene.render.image_settings.file_format", visible: "web" },
         { key: "render_output_path", type: "string", subtype: "file_path", editable: false,
-          eval: "str(Path(bpy.data.filepath).parent.joinpath('render', '######')) if bpy.data.filepath else f'/mnt/shared/flamenco/jobs/{jobname}/render/######'",
+          eval: "f'/mnt/shared/flamenco/jobs/{jobname}/render/######'",
           description: "Final file path of where render output will be saved"},
     ]
 };
