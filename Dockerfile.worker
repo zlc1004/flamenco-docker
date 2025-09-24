@@ -4,37 +4,31 @@ RUN apt update && apt install curl -y
 RUN curl https://flamenco.blender.org/downloads/flamenco-3.5-linux-amd64.tar.gz > /tmp/flamenco.tar.gz
 RUN mkdir -p /flamenco && tar -zxvf /tmp/flamenco.tar.gz -C /flamenco
 
-FROM docker.io/linuxserver/blender:4.2.3
+FROM blenderproc/blenderproc:v2
 
 COPY --from=package-retrieval /flamenco/flamenco-3.5-linux-amd64 /flamenco
 COPY ./gpu_only_config.py /flamenco/gpu_only_config.py
 
 WORKDIR /flamenco
 
-# Create necessary directories
-RUN mkdir -p /mnt/shared/flamenco /tmp/flamenco-worker-cache
+# Create necessary directories with proper permissions
+RUN mkdir -p /mnt/shared/flamenco /tmp/flamenco-worker-cache /data \
+    && chmod 777 /mnt/shared/flamenco /tmp/flamenco-worker-cache /data
 
-# Install dependencies for headless operation
+# Install additional dependencies (BlenderProc image should already have most GPU support)
 RUN apt-get update && apt-get install -y \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # Set default environment variables (can be overridden by docker-compose)
 ENV MANAGER_URL=http://localhost:8080
-ENV FLAMENCO_WORKER_NAME="Flamenco Worker"
+ENV FLAMENCO_WORKER_NAME="BlenderProc Worker"
 
-# Configure for headless operation
+# Configure for headless operation with GPU (BlenderProc should auto-detect GPU)
 ENV DISPLAY=:99
 ENV XDG_RUNTIME_DIR=/tmp
-ENV LIBGL_ALWAYS_SOFTWARE=1
+ENV CYCLES_DEVICE=CUDA
+ENV CUDA_VISIBLE_DEVICES=0
 
-# Copy the OptiX fix script as a custom init script
-COPY ./entrypoint-worker.sh /etc/cont-init.d/99-optix-fix
-RUN chmod +x /etc/cont-init.d/99-optix-fix
-
-# Create the actual worker startup script
-RUN echo '#!/bin/bash\n# Debug GPU and Cycles devices\necho "=== GPU Debug Info ==="\nnvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || echo "nvidia-smi not available"\necho "=== Starting Worker ==="\n# Set Blender to use GPU by default\nexport CYCLES_DEVICE=CUDA\nexport CUDA_VISIBLE_DEVICES=0\n# Pre-configure Blender for GPU-only\nmkdir -p /tmp/blender_config/4.2/scripts/startup\necho "import bpy; bpy.app.timers.register(lambda: (setattr(bpy.context.scene.cycles, '"'"'device'"'"', '"'"'GPU'"'"'), setattr(bpy.context.preferences.addons['"'"'cycles'"'"'].preferences, '"'"'compute_device_type'"'"', '"'"'CUDA'"'"'), [setattr(d, '"'"'use'"'"', d.type=='"'"'CUDA'"'"') for d in bpy.context.preferences.addons['"'"'cycles'"'"'].preferences.devices], print('"'"'GPU-only forced'"'"'))[3])" > /tmp/blender_config/4.2/scripts/startup/gpu_force.py\n# Start flamenco worker\nexec /flamenco/flamenco-worker -manager "$MANAGER_URL" -restart-exit-code 47' > /usr/local/bin/start-worker.sh && \
-    chmod +x /usr/local/bin/start-worker.sh
-
-# Override the default CMD to run our worker
-CMD ["/usr/local/bin/start-worker.sh"]
+# Test GPU access on startup and then run Flamenco worker
+CMD ["sh", "-c", "echo '=== GPU Check ===' && nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || echo 'nvidia-smi not available' && echo '=== Starting Flamenco Worker ===' && /flamenco/flamenco-worker -manager ${MANAGER_URL} -restart-exit-code 47"]

@@ -26,13 +26,16 @@ services:
       - flamenco-network
     restart: unless-stopped
 
-  flamenco-worker:
+  blender-worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
+    container_name: blender-worker
+    # Use host user ID as recommended by BlenderProc documentation
+    user: "${UID:-1000}:${GID:-1000}"
     environment:
       - MANAGER_URL=http://flamenco-manager:8080
-      - FLAMENCO_WORKER_NAME=Flamenco Worker
+      - FLAMENCO_WORKER_NAME=BlenderProc Worker
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=graphics,compute,utility
       # Headless rendering configuration
@@ -47,6 +50,8 @@ services:
       - BLENDER_USER_CONFIG=/tmp/blender_config
     volumes:
       - ./shared-storage:/mnt/shared/flamenco
+      # Mount current directory as /data as recommended by BlenderProc
+      - .:/data
     networks:
       - flamenco-network
     depends_on:
