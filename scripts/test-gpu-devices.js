@@ -3,7 +3,7 @@ const JOB_TYPE = {
     label: "Test GPU Devices Available",
     description: "Test what GPU devices are detected by Blender",
     settings: [
-        { key: "blendfile", type: "string", required: true, description: "Path of the Blend file", visible: "web" },
+        // No settings needed - uses factory startup
     ]
 };
 
@@ -50,15 +50,12 @@ print(f"Cycles version: {bpy.app.version}")
 function compileJob(job) {
     print("GPU Device Test job submitted");
     
-    const settings = job.settings;
-    
     const task = author.Task("test-gpu-devices", "blender");
     
     const command = author.Command("blender-render", {
         exe: "{blender}",
-        exeArgs: "-b -y",
+        exeArgs: "-b -y --factory-startup",
         argsBefore: [],
-        blendfile: settings.blendfile,
         args: [
             '--python-expr',
             test_gpu_devices,
