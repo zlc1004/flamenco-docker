@@ -164,7 +164,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         
         const command = author.Command("blender-render", {
             exe: "{blender}",
-            exeArgs: "{blenderArgs}",
+            exeArgs: "-b -y -E CYCLES -a -- --cycles-device OPTIX",
             argsBefore: blender_args_before,
             blendfile: settings.blendfile,
             args: task_invariant_args.concat([
