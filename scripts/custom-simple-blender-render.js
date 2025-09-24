@@ -164,7 +164,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         
         const command = author.Command("blender-render", {
             exe: "{blender}",
-            exeArgs: "-b -y -E CYCLES -a -- --cycles-device CUDA",
+            exeArgs: "-b -y -E CYCLES -- --cycles-device CUDA",
             argsBefore: blender_args_before,
             blendfile: settings.blendfile,
             args: task_invariant_args.concat([
