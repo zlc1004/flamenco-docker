@@ -74,47 +74,36 @@ function compileJob(job) {
     cleanupJobSettings(job.settings);
 }
 
-// CUDA GPU enablement Python code
+// CUDA GPU enablement Python code - simplified and reliable
 const enable_all_cuda = `
 import bpy
 
-print("=== Configuring Blender for CUDA GPU-only rendering ===")
+print("=== Configuring Blender for CUDA GPU rendering ===")
 
 # Set render engine to Cycles
 bpy.context.scene.render.engine = 'CYCLES'
 
-# Get cycles preferences
-prefs = bpy.context.preferences.addons['cycles'].preferences
-
-# Set compute device type to CUDA
-prefs.compute_device_type = 'CUDA'
-
-# Refresh devices to ensure we have the latest list
-prefs.get_devices()
-
-# Completely disable CPU devices, enable only CUDA devices
-cuda_count = 0
-cpu_count = 0
-for device in prefs.devices:
-    if device.type == 'CUDA':
-        device.use = True
-        cuda_count += 1
-        print(f"✓ Enabled CUDA device: {device.name}")
-    else:
-        device.use = False
-        if device.type == 'CPU':
-            cpu_count += 1
-        print(f"✗ Disabled device: {device.name} ({device.type})")
-
-# Force GPU device on scene
+# Set device to GPU for scene rendering
 bpy.context.scene.cycles.device = 'GPU'
 
-print(f"=== CUDA GPU-only configuration complete ===")
-print(f"Render engine: {bpy.context.scene.render.engine}")
-print(f"Scene device: {bpy.context.scene.cycles.device}")
-print(f"Compute device type: {prefs.compute_device_type}")
-print(f"CUDA devices enabled: {cuda_count}")
-print(f"CPU devices disabled: {cpu_count}")
+# Get cycles preferences and configure CUDA
+try:
+    prefs = bpy.context.preferences.addons['cycles'].preferences
+    prefs.compute_device_type = 'CUDA'
+    prefs.get_devices()
+    
+    # Enable CUDA devices
+    cuda_devices = [d for d in prefs.devices if d.type == 'CUDA']
+    for device in cuda_devices:
+        device.use = True
+        print(f"✓ Enabled CUDA device: {device.name}")
+    
+    print(f"CUDA GPU rendering configured with {len(cuda_devices)} device(s)")
+except Exception as e:
+    print(f"Warning: CUDA configuration failed: {e}")
+    print("Continuing with default GPU settings...")
+
+print("=== Configuration complete ===")
 `;
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
@@ -135,8 +124,6 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
     const task_invariant_args = [
         '--python-expr',
         enable_all_cuda,
-        '--python-expr',
-        "import bpy; bpy.context.scene.cycles.device = 'GPU'",
         '--render-output',
         path.join(renderDir, path.basename(renderOutput)),
         '--render-format',
