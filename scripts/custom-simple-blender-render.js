@@ -74,8 +74,8 @@ function compileJob(job) {
     cleanupJobSettings(job.settings);
 }
 
-// CUDA GPU enablement Python code - simplified and reliable
-const enable_all_cuda = `
+// CUDA GPU enablement Python code - base64 encoded to avoid multi-line issues
+const cuda_script = `
 import bpy
 
 print("=== Configuring Blender for CUDA GPU rendering ===")
@@ -104,7 +104,11 @@ except Exception as e:
     print("Continuing with default GPU settings...")
 
 print("=== Configuration complete ===")
-`;
+`.trim();
+
+// Base64 encode the script to avoid shell command line issues
+const cuda_script_b64 = "aW1wb3J0IGJweQoKcHJpbnQoIj09PSBDb25maWd1cmluZyBCbGVuZGVyIGZvciBDVURBIEdQVSByZW5kZXJpbmcgPT09IikKCiMgU2V0IHJlbmRlciBlbmdpbmUgdG8gQ3ljbGVzCmJweS5jb250ZXh0LnNjZW5lLnJlbmRlci5lbmdpbmUgPSAiQ1lDTEVTIgoKIyBTZXQgZGV2aWNlIHRvIEdQVSBmb3Igc2NlbmUgcmVuZGVyaW5nCmJweS5jb250ZXh0LnNjZW5lLmN5Y2xlcy5kZXZpY2UgPSAiR1BVIgoKIyBHZXQgY3ljbGVzIHByZWZlcmVuY2VzIGFuZCBjb25maWd1cmUgQ1VEQQp0cnk6CiAgICBwcmVmcyA9IGJweS5jb250ZXh0LnByZWZlcmVuY2VzLmFkZG9uc1siY3ljbGVzIl0ucHJlZmVyZW5jZXMKICAgIHByZWZzLmNvbXB1dGVfZGV2aWNlX3R5cGUgPSAiQ1VEQSIKICAgIHByZWZzLmdldF9kZXZpY2VzKCkKICAgIAogICAgIyBFbmFibGUgQ1VEQSBkZXZpY2VzCiAgICBjdWRhX2RldmljZXMgPSBbZCBmb3IgZCBpbiBwcmVmcy5kZXZpY2VzIGlmIGQudHlwZSA9PSAiQ1VEQSJdCiAgICBmb3IgZGV2aWNlIGluIGN1ZGFfZGV2aWNlczoKICAgICAgICBkZXZpY2UudXNlID0gVHJ1ZQogICAgICAgIHByaW50KGYi4pyTIEVuYWJsZWQgQ1VEQSBkZXZpY2U6IHtkZXZpY2UubmFtZX0iKQogICAgCiAgICBwcmludChmIkNVREEgR1BVIHJlbmRlcmluZyBjb25maWd1cmVkIHdpdGgge2xlbihjdWRhX2RldmljZXMpfSBkZXZpY2UocykiKQpleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICBwcmludChmIldhcm5pbmc6IENVREEgY29uZmlndXJhdGlvbiBmYWlsZWQ6IHtlfSIpCiAgICBwcmludCgiQ29udGludWluZyB3aXRoIGRlZmF1bHQgR1BVIHNldHRpbmdzLi4uIikKCnByaW50KCI9PT0gQ29uZmlndXJhdGlvbiBjb21wbGV0ZSA9PT0iKQo="
+const enable_all_cuda = `exec(__import__("base64").b64decode("${cuda_script_b64}").decode())`;
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
     print("authorRenderTasks(", renderDir, renderOutput, ")");
@@ -152,7 +156,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         
         const command = author.Command("blender-render", {
             exe: "{blender}",
-            exeArgs: "-b -y -E CYCLES -- --cycles-device CUDA",
+            exeArgs: "-b -y -E CYCLES",
             argsBefore: blender_args_before,
             blendfile: settings.blendfile,
             args: args,
