@@ -140,15 +140,23 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         });
         task.addCommand(mkdirCommand);
         
+        // Parse the chunk to determine if it's a single frame or range
+        let frameArgs = [];
+        if (chunk.includes('-')) {
+            // Handle frame range like "1-100"
+            const [start, end] = chunk.split('-').map(f => parseInt(f.trim()));
+            frameArgs = ['-s', start.toString(), '-e', end.toString()];
+        } else {
+            // Handle single frame like "5"
+            frameArgs = ['-f', chunk];
+        }
+        
         const command = author.Command("blender-render", {
             exe: "{blender}",
             exeArgs: "-b -y -E CYCLES -- --cycles-device CUDA",
             argsBefore: blender_args_before,
             blendfile: settings.blendfile,
-            args: task_invariant_args.concat([
-                '--render-frame',
-                chunk, // Use the chunk as-is, Blender expects 1-100 format
-            ]),
+            args: task_invariant_args.concat(frameArgs),
         });
         task.addCommand(command);
         renderTasks.push(task);
