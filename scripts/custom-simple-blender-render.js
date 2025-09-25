@@ -135,7 +135,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
             '--python-expr',
             enable_all_cuda,
             '-o', 
-            path.join(renderDir, path.basename(renderOutput)),
+            path.join(renderDir, 'frame_'),
             '-F',
             settings.format,
         ].concat(blender_args_after);
