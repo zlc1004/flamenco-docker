@@ -120,16 +120,6 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
       baseArgs = baseArgs.concat(["--scene", settings.scene]);
     }
 
-    // More arguments for Blender, which will be the same for each task.
-    const task_invariant_args = [
-        '--python-expr',
-        enable_all_cuda,
-        '--render-output',
-        path.join(renderDir, path.basename(renderOutput)),
-        '--render-format',
-        settings.format,
-    ].concat(blender_args_after);
-
     for (let chunk of chunks) {
         const task = author.Task(`render-${chunk}`, "blender");
         
@@ -140,15 +130,24 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         });
         task.addCommand(mkdirCommand);
         
-        // Parse the chunk to determine if it's a single frame or range
-        let frameArgs = [];
+        // Build command arguments in correct order per Blender documentation
+        let args = [
+            '--python-expr',
+            enable_all_cuda,
+            '-o', 
+            path.join(renderDir, path.basename(renderOutput)),
+            '-F',
+            settings.format,
+        ].concat(blender_args_after);
+        
+        // Parse the chunk and add frame arguments at the end
         if (chunk.includes('-')) {
-            // Handle frame range like "1-100"
+            // Handle frame range like "1-100" - use -s -e -a
             const [start, end] = chunk.split('-').map(f => parseInt(f.trim()));
-            frameArgs = ['-s', start.toString(), '-e', end.toString()];
+            args = args.concat(['-s', start.toString(), '-e', end.toString(), '-a']);
         } else {
-            // Handle single frame like "5"
-            frameArgs = ['-f', chunk];
+            // Handle single frame like "5" - use -f
+            args = args.concat(['-f', chunk]);
         }
         
         const command = author.Command("blender-render", {
@@ -156,7 +155,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
             exeArgs: "-b -y -E CYCLES -- --cycles-device CUDA",
             argsBefore: blender_args_before,
             blendfile: settings.blendfile,
-            args: task_invariant_args.concat(frameArgs),
+            args: args,
         });
         task.addCommand(command);
         renderTasks.push(task);
