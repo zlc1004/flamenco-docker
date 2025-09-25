@@ -234,7 +234,7 @@ print("=== Configuring Blender for CUDA GPU-ONLY rendering ===")
 # Set render engine to Cycles
 bpy.context.scene.render.engine = 'CYCLES'
 
-# Set device to GPU for scene rendering
+# CRITICAL: Set device to GPU for scene rendering
 bpy.context.scene.cycles.device = 'GPU'
 
 # Get cycles preferences and configure CUDA
@@ -262,10 +262,26 @@ try:
                 other_count += 1
                 print(f"✗ DISABLED {device.type} device: {device.name}")
     
+    # ADDITIONAL: Force GPU-only at the view layer level
+    for view_layer in bpy.context.scene.view_layers:
+        if hasattr(view_layer, 'cycles'):
+            view_layer.cycles.device = 'GPU'
+            print(f"✓ Set view layer '{view_layer.name}' to GPU")
+    
+    # FORCE scene cycles settings to GPU only
+    cycles = bpy.context.scene.cycles
+    cycles.device = 'GPU'
+    
+    # Disable CPU fallback if available
+    if hasattr(cycles, 'use_cpu_fallback'):
+        cycles.use_cpu_fallback = False
+        print("✓ DISABLED CPU fallback")
+    
     print(f"=== GPU-ONLY configuration complete ===")
     print(f"CUDA devices enabled: {cuda_count}")
     print(f"CPU devices disabled: {cpu_count}")
     print(f"Other devices disabled: {other_count}")
+    print(f"Scene device: {bpy.context.scene.cycles.device}")
     
 except Exception as e:
     print(f"Warning: CUDA configuration failed: {e}")
@@ -312,13 +328,14 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         task.addCommand(mkdirCommand);
         
         // Build command arguments in correct order per Blender documentation
+        // NOTE: Move python-expr AFTER blend file so context is available
         let args = [
-            '--python-expr',
-            enable_all_cuda,
             '-o', 
             path.join(renderDir, 'frame_'),
             '-F',
             settings.format,
+            '--python-expr',
+            enable_all_cuda,
         ].concat(blender_args_after);
         
         // Parse the chunk and add frame arguments at the end
