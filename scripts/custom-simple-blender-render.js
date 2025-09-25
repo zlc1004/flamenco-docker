@@ -123,8 +123,14 @@ except Exception as e:
 print("=== Configuration complete ===")
 `.trim();
 
-// Base64 encode the script using btoa() equivalent
-const cuda_script_b64 = btoa(cuda_script)
+const b64encode = function (str, witheq = false) {
+  const buf = Buffer.from(str).toString('base64').replace(/\+/g, '-')
+  .replace(/\//g, '_');
+  return !witheq ? buf.replace(/=+$/, '') : buf;
+};
+
+// Base64 encode the script using our custom function
+const cuda_script_b64 = b64encode(cuda_script)
 const enable_all_cuda = `exec(__import__("base64").b64decode("${cuda_script_b64}").decode())`;
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
