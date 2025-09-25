@@ -74,11 +74,11 @@ function compileJob(job) {
     cleanupJobSettings(job.settings);
 }
 
-// CUDA GPU enablement Python code - base64 encoded to avoid multi-line issues
+// CUDA GPU enablement Python code - GPU-ONLY mode
 const cuda_script = `
 import bpy
 
-print("=== Configuring Blender for CUDA GPU rendering ===")
+print("=== Configuring Blender for CUDA GPU-ONLY rendering ===")
 
 # Set render engine to Cycles
 bpy.context.scene.render.engine = 'CYCLES'
@@ -92,13 +92,30 @@ try:
     prefs.compute_device_type = 'CUDA'
     prefs.get_devices()
     
-    # Enable CUDA devices
-    cuda_devices = [d for d in prefs.devices if d.type == 'CUDA']
-    for device in cuda_devices:
-        device.use = True
-        print(f"✓ Enabled CUDA device: {device.name}")
+    # DISABLE ALL DEVICES FIRST, then enable only CUDA
+    cuda_count = 0
+    cpu_count = 0
+    other_count = 0
     
-    print(f"CUDA GPU rendering configured with {len(cuda_devices)} device(s)")
+    for device in prefs.devices:
+        if device.type == 'CUDA':
+            device.use = True
+            cuda_count += 1
+            print(f"✓ ENABLED CUDA device: {device.name}")
+        else:
+            device.use = False  # DISABLE CPU and other devices
+            if device.type == 'CPU':
+                cpu_count += 1
+                print(f"✗ DISABLED CPU device: {device.name}")
+            else:
+                other_count += 1
+                print(f"✗ DISABLED {device.type} device: {device.name}")
+    
+    print(f"=== GPU-ONLY configuration complete ===")
+    print(f"CUDA devices enabled: {cuda_count}")
+    print(f"CPU devices disabled: {cpu_count}")
+    print(f"Other devices disabled: {other_count}")
+    
 except Exception as e:
     print(f"Warning: CUDA configuration failed: {e}")
     print("Continuing with default GPU settings...")
@@ -106,8 +123,8 @@ except Exception as e:
 print("=== Configuration complete ===")
 `.trim();
 
-// Base64 encode the script to avoid shell command line issues
-const cuda_script_b64 = "aW1wb3J0IGJweQoKcHJpbnQoIj09PSBDb25maWd1cmluZyBCbGVuZGVyIGZvciBDVURBIEdQVSByZW5kZXJpbmcgPT09IikKCiMgU2V0IHJlbmRlciBlbmdpbmUgdG8gQ3ljbGVzCmJweS5jb250ZXh0LnNjZW5lLnJlbmRlci5lbmdpbmUgPSAiQ1lDTEVTIgoKIyBTZXQgZGV2aWNlIHRvIEdQVSBmb3Igc2NlbmUgcmVuZGVyaW5nCmJweS5jb250ZXh0LnNjZW5lLmN5Y2xlcy5kZXZpY2UgPSAiR1BVIgoKIyBHZXQgY3ljbGVzIHByZWZlcmVuY2VzIGFuZCBjb25maWd1cmUgQ1VEQQp0cnk6CiAgICBwcmVmcyA9IGJweS5jb250ZXh0LnByZWZlcmVuY2VzLmFkZG9uc1siY3ljbGVzIl0ucHJlZmVyZW5jZXMKICAgIHByZWZzLmNvbXB1dGVfZGV2aWNlX3R5cGUgPSAiQ1VEQSIKICAgIHByZWZzLmdldF9kZXZpY2VzKCkKICAgIAogICAgIyBFbmFibGUgQ1VEQSBkZXZpY2VzCiAgICBjdWRhX2RldmljZXMgPSBbZCBmb3IgZCBpbiBwcmVmcy5kZXZpY2VzIGlmIGQudHlwZSA9PSAiQ1VEQSJdCiAgICBmb3IgZGV2aWNlIGluIGN1ZGFfZGV2aWNlczoKICAgICAgICBkZXZpY2UudXNlID0gVHJ1ZQogICAgICAgIHByaW50KGYi4pyTIEVuYWJsZWQgQ1VEQSBkZXZpY2U6IHtkZXZpY2UubmFtZX0iKQogICAgCiAgICBwcmludChmIkNVREEgR1BVIHJlbmRlcmluZyBjb25maWd1cmVkIHdpdGgge2xlbihjdWRhX2RldmljZXMpfSBkZXZpY2UocykiKQpleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICBwcmludChmIldhcm5pbmc6IENVREEgY29uZmlndXJhdGlvbiBmYWlsZWQ6IHtlfSIpCiAgICBwcmludCgiQ29udGludWluZyB3aXRoIGRlZmF1bHQgR1BVIHNldHRpbmdzLi4uIikKCnByaW50KCI9PT0gQ29uZmlndXJhdGlvbiBjb21wbGV0ZSA9PT0iKQo="
+// Base64 encode the script using btoa() equivalent
+const cuda_script_b64 = btoa(cuda_script)
 const enable_all_cuda = `exec(__import__("base64").b64decode("${cuda_script_b64}").decode())`;
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
