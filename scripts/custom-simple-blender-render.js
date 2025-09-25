@@ -327,15 +327,22 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         });
         task.addCommand(mkdirCommand);
         
+        // Create a temporary Python file with CUDA configuration
+        const cudaPyPath = path.join(renderDir, "cuda_config.py");
+        const createCudaScript = author.Command("exec", {
+            exe: "sh",
+            args: ["-c", `cat > "${cudaPyPath}" << 'EOF'\n${cuda_script}\nEOF`]
+        });
+        task.addCommand(createCudaScript);
+        
         // Build command arguments in correct order per Blender documentation
-        // NOTE: Move python-expr AFTER blend file so context is available
         let args = [
             '-o', 
             path.join(renderDir, 'frame_'),
             '-F',
             settings.format,
-            '--python-expr',
-            enable_all_cuda,
+            '--python',
+            cudaPyPath,
         ].concat(blender_args_after);
         
         // Parse the chunk and add frame arguments at the end
