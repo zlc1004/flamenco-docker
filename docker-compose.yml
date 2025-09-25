@@ -22,6 +22,7 @@ services:
       - FLAMENCO_TASK_FAIL_AFTER_SOFTFAIL_COUNT=3
     volumes:
       - ./shared-storage:/mnt/shared/flamenco
+      - ./manager-flamenco:/flamenco
     networks:
       - flamenco-network
     restart: unless-stopped
