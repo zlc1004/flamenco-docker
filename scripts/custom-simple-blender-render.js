@@ -138,8 +138,20 @@ const b64encode = function (str) {
     
     result += chars.charAt((bitmap >> 18) & 63);
     result += chars.charAt((bitmap >> 12) & 63);
-    result += (i - 2) < str.length ? chars.charAt((bitmap >> 6) & 63) : '=';
-    result += (i - 1) < str.length ? chars.charAt(bitmap & 63) : '=';
+    
+    // Add third character or padding
+    if (i - 2 < str.length) {
+      result += chars.charAt((bitmap >> 6) & 63);
+    } else {
+      result += '=';
+    }
+    
+    // Add fourth character or padding
+    if (i - 1 < str.length) {
+      result += chars.charAt(bitmap & 63);
+    } else {
+      result += '=';
+    }
   }
   
   return result;
