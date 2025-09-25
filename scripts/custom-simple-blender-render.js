@@ -160,7 +160,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
             blendfile: settings.blendfile,
             args: task_invariant_args.concat([
                 '--render-frame',
-                chunk.replaceAll('-', '..'), // Convert to Blender frame range notation.
+                chunk, // Use the chunk as-is, Blender expects 1-100 format
             ]),
         });
         task.addCommand(command);
