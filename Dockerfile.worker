@@ -4,7 +4,7 @@ RUN apt update && apt install curl -y
 RUN curl https://flamenco.blender.org/downloads/flamenco-3.5-linux-amd64.tar.gz > /tmp/flamenco.tar.gz
 RUN mkdir -p /flamenco && tar -zxvf /tmp/flamenco.tar.gz -C /flamenco
 
-FROM blenderproc/blenderproc:v2
+FROM linuxserver/blender:latest
 
 COPY --from=package-retrieval /flamenco/flamenco-3.5-linux-amd64 /flamenco
 COPY ./gpu_only_config.py /flamenco/gpu_only_config.py
@@ -16,22 +16,19 @@ USER root
 RUN mkdir -p /mnt/shared/flamenco /tmp/flamenco-worker-cache /data \
     && chmod 777 /mnt/shared/flamenco /tmp/flamenco-worker-cache /data
 
-# Install additional dependencies (BlenderProc image should already have most GPU support)
-# Remove problematic CUDA repository and install minimal dependencies
-RUN rm -f /etc/apt/sources.list.d/cuda*.list \
-    && apt-get update && apt-get install -y \
+# Install additional dependencies for GPU support
+# Install additional dependencies for GPU support
+RUN apt-get update && apt-get install -y \
     xvfb \
+    nvidia-cuda-toolkit \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a blender wrapper script for Flamenco compatibility with headless support
+# LinuxServer image puts Blender in /usr/bin/blender
 RUN echo '#!/bin/bash' > /usr/local/bin/blender && \
-    echo '# BlenderProc Blender wrapper for Flamenco with headless support' >> /usr/local/bin/blender && \
-    echo '# Look for actual Blender executable in BlenderProc installation' >> /usr/local/bin/blender && \
-    echo 'BLENDER_EXECUTABLE=$(find /home -path "*/blender/blender-*/blender" -type f -executable 2>/dev/null | grep -v softwaregl | head -1)' >> /usr/local/bin/blender && \
-    echo 'if [ -z "$BLENDER_EXECUTABLE" ]; then' >> /usr/local/bin/blender && \
-    echo '    BLENDER_EXECUTABLE=$(find /home -name "blender" -type f -executable 2>/dev/null | grep -v "/usr/local/bin/blender" | grep -v "blender-launcher" | grep -v softwaregl | grep -v thumbnailer | head -1)' >> /usr/local/bin/blender && \
-    echo 'fi' >> /usr/local/bin/blender && \
-    echo 'if [ -n "$BLENDER_EXECUTABLE" ] && [ "$BLENDER_EXECUTABLE" != "/usr/local/bin/blender" ]; then' >> /usr/local/bin/blender && \
+    echo '# LinuxServer Blender wrapper for Flamenco with headless support' >> /usr/local/bin/blender && \
+    echo 'BLENDER_EXECUTABLE="/usr/bin/blender"' >> /usr/local/bin/blender && \
+    echo 'if [ -f "$BLENDER_EXECUTABLE" ]; then' >> /usr/local/bin/blender && \
     echo '    echo "Using Blender: $BLENDER_EXECUTABLE" >&2' >> /usr/local/bin/blender && \
     echo '    # Start Xvfb if not already running and no DISPLAY set' >> /usr/local/bin/blender && \
     echo '    if [ -z "$DISPLAY" ] || ! xset q >/dev/null 2>&1; then' >> /usr/local/bin/blender && \
@@ -44,27 +41,16 @@ RUN echo '#!/bin/bash' > /usr/local/bin/blender && \
     echo '    fi' >> /usr/local/bin/blender && \
     echo '    exec "$BLENDER_EXECUTABLE" "$@"' >> /usr/local/bin/blender && \
     echo 'else' >> /usr/local/bin/blender && \
-    echo '    echo "No suitable Blender executable found" >&2' >> /usr/local/bin/blender && \
-    echo '    echo "Available blender files:" >&2' >> /usr/local/bin/blender && \
-    echo '    find /home -name "*blender*" -type f -executable 2>/dev/null | head -10 >&2' >> /usr/local/bin/blender && \
+    echo '    echo "Blender not found at $BLENDER_EXECUTABLE" >&2' >> /usr/local/bin/blender && \
     echo '    exit 1' >> /usr/local/bin/blender && \
     echo 'fi' >> /usr/local/bin/blender && \
     chmod +x /usr/local/bin/blender
 
-# Pre-cache the Blender executable location for faster startup
-RUN BLENDER_EXEC=$(find /home -path "*/blender/blender-*/blender" -type f -executable 2>/dev/null | grep -v softwaregl | head -1) && \
-    if [ -n "$BLENDER_EXEC" ]; then \
-        echo "Found Blender at: $BLENDER_EXEC" && \
-        ln -sf "$BLENDER_EXEC" /usr/local/bin/blender-direct; \
-    fi
-
-# Don't switch to a specific user - let BlenderProc use its default user
-
 # Set default environment variables (can be overridden by docker-compose)
 ENV MANAGER_URL=http://localhost:8080
-ENV FLAMENCO_WORKER_NAME="BlenderProc Worker"
+ENV FLAMENCO_WORKER_NAME="LinuxServer Blender Worker"
 
-# Configure for headless operation with GPU (BlenderProc should auto-detect GPU)
+# Configure for headless operation with GPU
 ENV DISPLAY=:99
 ENV XDG_RUNTIME_DIR=/tmp
 ENV CYCLES_DEVICE=CUDA
