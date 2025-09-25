@@ -123,10 +123,26 @@ except Exception as e:
 print("=== Configuration complete ===")
 `.trim();
 
-const b64encode = function (str, witheq = false) {
-  const buf = Buffer.from(str).toString('base64').replace(/\+/g, '-')
-  .replace(/\//g, '_');
-  return !witheq ? buf.replace(/=+$/, '') : buf;
+const b64encode = function (str) {
+  // Simple base64 encoding without Node.js Buffer
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  let result = '';
+  let i = 0;
+  
+  while (i < str.length) {
+    const a = str.charCodeAt(i++);
+    const b = i < str.length ? str.charCodeAt(i++) : 0;
+    const c = i < str.length ? str.charCodeAt(i++) : 0;
+    
+    const bitmap = (a << 16) | (b << 8) | c;
+    
+    result += chars.charAt((bitmap >> 18) & 63);
+    result += chars.charAt((bitmap >> 12) & 63);
+    result += (i - 2) < str.length ? chars.charAt((bitmap >> 6) & 63) : '=';
+    result += (i - 1) < str.length ? chars.charAt(bitmap & 63) : '=';
+  }
+  
+  return result;
 };
 
 // Base64 encode the script using our custom function
