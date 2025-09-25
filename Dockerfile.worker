@@ -57,4 +57,4 @@ ENV CYCLES_DEVICE=CUDA
 ENV CUDA_VISIBLE_DEVICES=0
 
 # Test GPU access on startup and then run Flamenco worker
-CMD ["sh", "-c", "echo '=== GPU Check ===' && nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || echo 'nvidia-smi not available' && echo '=== Starting Flamenco Worker ===' && /flamenco/flamenco-worker -manager ${MANAGER_URL} -restart-exit-code 47"]
+CMD ["sh", "-c", "echo '=== GPU Check ===' && nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || echo 'nvidia-smi not available' && echo '=== Starting Flamenco Worker ===' && /flamenco/flamenco-worker -manager \"${MANAGER_URL}\" -restart-exit-code 47"]
