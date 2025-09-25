@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-'use strict'
+// 'use strict'
 
-exports.byteLength = byteLength
-exports.toByteArray = toByteArray
-exports.fromByteArray = fromByteArray
+// exports.byteLength = byteLength
+// exports.toByteArray = toByteArray
+// exports.fromByteArray = fromByteArray
 
 var lookup = []
 var revLookup = []
