@@ -229,65 +229,129 @@ function compileJob(job) {
 const cuda_script = `
 import bpy
 
-print("=== Configuring Blender for CUDA GPU-ONLY rendering ===")
+print("=== AGGRESSIVE CUDA GPU-ONLY Configuration ===")
 
-# Set render engine to Cycles
+# Set render engine to Cycles FIRST
 bpy.context.scene.render.engine = 'CYCLES'
+print(f"✓ Render engine set to: {bpy.context.scene.render.engine}")
 
-# CRITICAL: Set device to GPU for scene rendering
-bpy.context.scene.cycles.device = 'GPU'
-
-# Get cycles preferences and configure CUDA
+# Get cycles preferences and configure CUDA with error handling
 try:
-    prefs = bpy.context.preferences.addons['cycles'].preferences
+    # Access Cycles addon preferences
+    cycles_addon = bpy.context.preferences.addons.get('cycles')
+    if not cycles_addon:
+        print("ERROR: Cycles addon not found!")
+        exit(1)
+    
+    prefs = cycles_addon.preferences
+    print(f"Current compute device type: {prefs.compute_device_type}")
+    
+    # Force CUDA device type
     prefs.compute_device_type = 'CUDA'
+    print("✓ Set compute device type to CUDA")
+    
+    # Refresh devices
     prefs.get_devices()
+    print(f"Available devices after refresh: {len(prefs.devices)}")
     
-    # DISABLE ALL DEVICES FIRST, then enable only CUDA
-    cuda_count = 0
-    cpu_count = 0
-    other_count = 0
+    # AGGRESSIVE DEVICE MANAGEMENT
+    cuda_devices = []
+    cpu_devices = []
+    other_devices = []
     
+    # First pass: categorize devices
     for device in prefs.devices:
         if device.type == 'CUDA':
-            device.use = True
-            cuda_count += 1
-            print(f"✓ ENABLED CUDA device: {device.name}")
+            cuda_devices.append(device)
+        elif device.type == 'CPU':
+            cpu_devices.append(device)
         else:
-            device.use = False  # DISABLE CPU and other devices
-            if device.type == 'CPU':
-                cpu_count += 1
-                print(f"✗ DISABLED CPU device: {device.name}")
-            else:
-                other_count += 1
-                print(f"✗ DISABLED {device.type} device: {device.name}")
+            other_devices.append(device)
     
-    # ADDITIONAL: Force GPU-only at the view layer level
-    for view_layer in bpy.context.scene.view_layers:
-        if hasattr(view_layer, 'cycles'):
-            view_layer.cycles.device = 'GPU'
-            print(f"✓ Set view layer '{view_layer.name}' to GPU")
+    print(f"Found: {len(cuda_devices)} CUDA, {len(cpu_devices)} CPU, {len(other_devices)} other devices")
     
-    # FORCE scene cycles settings to GPU only
-    cycles = bpy.context.scene.cycles
+    # Second pass: DISABLE ALL NON-CUDA DEVICES
+    for device in prefs.devices:
+        device.use = (device.type == 'CUDA')
+        status = "ENABLED" if device.use else "DISABLED"
+        print(f"{status}: {device.type} - {device.name}")
+    
+    # Verify only CUDA devices are enabled
+    enabled_devices = [d for d in prefs.devices if d.use]
+    if not enabled_devices:
+        print("ERROR: No devices enabled!")
+        exit(1)
+    
+    if any(d.type != 'CUDA' for d in enabled_devices):
+        print("ERROR: Non-CUDA devices still enabled!")
+        for d in enabled_devices:
+            if d.type != 'CUDA':
+                print(f"  Still enabled: {d.type} - {d.name}")
+        exit(1)
+    
+    print(f"✓ SUCCESS: Only {len(enabled_devices)} CUDA device(s) enabled")
+
+except Exception as e:
+    print(f"FATAL: CUDA device configuration failed: {e}")
+    import traceback
+    traceback.print_exc()
+    exit(1)
+
+# FORCE SCENE SETTINGS TO GPU
+try:
+    scene = bpy.context.scene
+    cycles = scene.cycles
+    
+    # Set scene device to GPU
     cycles.device = 'GPU'
+    print(f"✓ Scene cycles device: {cycles.device}")
     
     # Disable CPU fallback if available
     if hasattr(cycles, 'use_cpu_fallback'):
         cycles.use_cpu_fallback = False
-        print("✓ DISABLED CPU fallback")
+        print("✓ CPU fallback disabled")
     
-    print(f"=== GPU-ONLY configuration complete ===")
-    print(f"CUDA devices enabled: {cuda_count}")
-    print(f"CPU devices disabled: {cpu_count}")
-    print(f"Other devices disabled: {other_count}")
-    print(f"Scene device: {bpy.context.scene.cycles.device}")
+    # Set all view layers to GPU
+    for i, view_layer in enumerate(scene.view_layers):
+        if hasattr(view_layer, 'cycles'):
+            view_layer.cycles.device = 'GPU'
+            print(f"✓ View layer {i} '{view_layer.name}' set to GPU")
     
-except Exception as e:
-    print(f"Warning: CUDA configuration failed: {e}")
-    print("Continuing with default GPU settings...")
+    # Additional Cycles performance settings for GPU
+    cycles.use_denoising = False  # Disable denoising for pure GPU performance
+    if hasattr(cycles, 'preview_samples'):
+        cycles.preview_samples = 32  # Lower preview samples
+    
+    print("✓ Additional GPU optimizations applied")
 
-print("=== Configuration complete ===")
+except Exception as e:
+    print(f"ERROR: Scene configuration failed: {e}")
+    import traceback
+    traceback.print_exc()
+
+# FINAL VERIFICATION
+print("\\n=== FINAL VERIFICATION ===")
+try:
+    prefs = bpy.context.preferences.addons['cycles'].preferences
+    enabled_cuda = [d for d in prefs.devices if d.use and d.type == 'CUDA']
+    enabled_other = [d for d in prefs.devices if d.use and d.type != 'CUDA']
+    
+    print(f"Final enabled CUDA devices: {len(enabled_cuda)}")
+    for d in enabled_cuda:
+        print(f"  ✓ {d.name}")
+    
+    if enabled_other:
+        print(f"ERROR: {len(enabled_other)} non-CUDA devices still enabled:")
+        for d in enabled_other:
+            print(f"  ✗ {d.type} - {d.name}")
+        exit(1)
+    
+    print(f"Scene device: {bpy.context.scene.cycles.device}")
+    print("=== GPU-ONLY CONFIGURATION COMPLETE ===")
+
+except Exception as e:
+    print(f"ERROR: Final verification failed: {e}")
+    exit(1)
 `.trim();
 
 // Convert string to Uint8Array and encode with the proper base64 library
