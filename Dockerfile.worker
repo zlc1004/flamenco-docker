@@ -47,7 +47,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/blender && \
     chmod +x /usr/local/bin/blender
 
 # Set default environment variables (can be overridden by docker-compose)
-ENV MANAGER_URL=http://localhost:8080
+ENV MANAGER_URL=http://flamenco-manager:8080
 ENV FLAMENCO_WORKER_NAME="LinuxServer Blender Worker"
 
 # Configure for headless operation with GPU
