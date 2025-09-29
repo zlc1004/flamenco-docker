@@ -194,6 +194,14 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
             argsBefore: blender_args_before,
             blendfile: settings.blendfile,
             args: args,
+            // Add NVIDIA GPU environment variables for Workbench
+            env: {
+                "__NV_PRIME_RENDER_OFFLOAD": "1",
+                "__GLX_VENDOR_LIBRARY_NAME": "nvidia",
+                "NVIDIA_VISIBLE_DEVICES": "all",
+                "NVIDIA_DRIVER_CAPABILITIES": "graphics,compute,utility",
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
         });
         task.addCommand(command);
         renderTasks.push(task);

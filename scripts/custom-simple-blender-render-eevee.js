@@ -84,11 +84,36 @@ print("=== Configuring Blender for Eevee Next rendering ===")
 bpy.context.scene.render.engine = 'BLENDER_EEVEE_NEXT'
 print(f"✓ Render engine set to: {bpy.context.scene.render.engine}")
 
+# FORCE GPU USAGE FOR EEVEE
+try:
+    # Get system preferences for GPU configuration
+    prefs = bpy.context.preferences
+    system = prefs.system
+    
+    # Force GPU compute for Eevee
+    system.gpu_backend = 'OPENGL'  # or 'VULKAN' if available
+    print(f"✓ GPU backend set to: {system.gpu_backend}")
+    
+    # Enable GPU subdivision if available
+    if hasattr(system, 'use_gpu_subdivision'):
+        system.use_gpu_subdivision = True
+        print("✓ GPU subdivision enabled")
+    
+    # Configure memory and GPU settings
+    system.memory_cache_limit = 4096  # 4GB cache
+    system.gpu_memory_limit = 0  # Use all available GPU memory
+    
+    print("✓ GPU configuration for Eevee applied")
+    
+except Exception as e:
+    print(f"Warning: GPU configuration failed: {e}")
+    print("Continuing with default GPU settings...")
+
 try:
     scene = bpy.context.scene
     eevee = scene.eevee
     
-    # Configure Eevee quality settings
+    # Configure Eevee quality settings optimized for GPU
     eevee.taa_render_samples = 64  # Good quality/speed balance
     eevee.taa_samples = 16  # Viewport samples
     eevee.use_gtao = True  # Ambient Occlusion
@@ -119,7 +144,7 @@ try:
     eevee.sss_samples = 7
     eevee.sss_jitter_threshold = 0.3
     
-    # Volume settings
+    # Volume settings optimized for GPU
     eevee.volumetric_start = 0.1
     eevee.volumetric_end = 100.0
     eevee.volumetric_tile_size = '8'
@@ -127,6 +152,11 @@ try:
     eevee.volumetric_sample_distribution = 0.8
     eevee.use_volumetric_lights = True
     eevee.use_volumetric_shadows = False  # Disable for speed
+    
+    # GPU-optimized settings
+    eevee.gi_diffuse_bounces = 3  # Reasonable bounce count for GPU
+    eevee.gi_cubemap_resolution = '512'  # Good balance
+    eevee.gi_visibility_resolution = '16'  # Performance setting
     
     print("✓ Eevee quality settings configured:")
     print(f"  - Render samples: {eevee.taa_render_samples}")
@@ -150,14 +180,40 @@ try:
     scene.view_settings.exposure = 0.0
     scene.view_settings.gamma = 1.0
     
-    print("✓ Additional Eevee optimizations applied")
+    # Force viewport to use GPU shading
+    for window in bpy.context.window_manager.windows:
+        for area in window.screen.areas:
+            if area.type == 'VIEW_3D':
+                for space in area.spaces:
+                    if space.type == 'VIEW_3D':
+                        space.shading.type = 'MATERIAL'
+                        if hasattr(space.shading, 'use_gpu_clip_planes'):
+                            space.shading.use_gpu_clip_planes = True
+    
+    print("✓ Additional Eevee GPU optimizations applied")
 
 except Exception as e:
     print(f"ERROR: Eevee configuration failed: {e}")
     import traceback
     traceback.print_exc()
 
-print("=== Eevee Next configuration complete ===")
+# FINAL GPU VERIFICATION
+print("\\n=== GPU VERIFICATION ===")
+try:
+    import gpu
+    gpu_info = gpu.platform.renderer_get()
+    print(f"GPU Renderer: {gpu_info}")
+    
+    prefs = bpy.context.preferences
+    system = prefs.system
+    print(f"GPU Backend: {system.gpu_backend}")
+    print(f"Memory Cache: {system.memory_cache_limit}MB")
+    print(f"GPU Memory Limit: {system.gpu_memory_limit}")
+    
+except Exception as e:
+    print(f"GPU verification failed: {e}")
+
+print("=== Eevee Next GPU configuration complete ===")
 `.trim();
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
@@ -218,6 +274,14 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
             argsBefore: blender_args_before,
             blendfile: settings.blendfile,
             args: args,
+            // CRITICAL: Add NVIDIA GPU environment variables for Eevee
+            env: {
+                "__NV_PRIME_RENDER_OFFLOAD": "1",
+                "__GLX_VENDOR_LIBRARY_NAME": "nvidia",
+                "NVIDIA_VISIBLE_DEVICES": "all",
+                "NVIDIA_DRIVER_CAPABILITIES": "graphics,compute,utility",
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
         });
         task.addCommand(command);
         renderTasks.push(task);
