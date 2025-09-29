@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 const JOB_TYPE = {
-    label: "Simple Blender Render Eevee (No Video)",
-    description: "Real-time Eevee engine rendering sequence of frames without creating preview video",
+    label: "Simple Blender Render Eevee Next (No Video)",
+    description: "Real-time Eevee Next engine rendering sequence of frames without creating preview video",
     settings: [
         // Settings for artists to determine:
         { key: "frames", type: "string", required: true,
@@ -47,7 +47,7 @@ const JOB_TYPE = {
 
 
 function compileJob(job) {
-    print("Blender Eevee Render job submitted (No Video)");
+    print("Blender Eevee Next Render job submitted (No Video)");
     print("job: ", job);
 
     const settings = job.settings;
@@ -78,10 +78,10 @@ function compileJob(job) {
 const eevee_script = `
 import bpy
 
-print("=== Configuring Blender for Eevee rendering ===")
+print("=== Configuring Blender for Eevee Next rendering ===")
 
 # Set render engine to Eevee
-bpy.context.scene.render.engine = 'BLENDER_EEVEE'
+bpy.context.scene.render.engine = 'BLENDER_EEVEE_NEXT'
 print(f"✓ Render engine set to: {bpy.context.scene.render.engine}")
 
 try:
@@ -157,7 +157,7 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
-print("=== Eevee configuration complete ===")
+print("=== Eevee Next configuration complete ===")
 `.trim();
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
@@ -214,7 +214,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         
         const command = author.Command("blender-render", {
             exe: "{blender}",
-            exeArgs: "-b -y -E BLENDER_EEVEE",
+            exeArgs: "-b -y -E BLENDER_EEVEE_NEXT",
             argsBefore: blender_args_before,
             blendfile: settings.blendfile,
             args: args,
