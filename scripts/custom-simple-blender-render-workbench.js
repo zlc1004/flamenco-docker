@@ -209,6 +209,6 @@ function cleanupJobSettings(settings) {
   ];
 
   for (let setting_name of settings_to_check) {
-    if (!settings[setting_name]) delete settings[settings_name];
+    if (!settings[setting_name]) delete settings[setting_name];
   }
 }

@@ -152,8 +152,8 @@ function fromByteArray (uint8) {
 }
 
 const JOB_TYPE = {
-    label: "Simple Blender Render CUDA GPU (No Video)",
-    description: "CUDA GPU rendering sequence of frames without creating preview video",
+    label: "Simple Blender Render Cycles GPU (No Video)",
+    description: "Cycles GPU rendering sequence of frames without creating preview video",
     settings: [
         // Settings for artists to determine:
         { key: "frames", type: "string", required: true,
